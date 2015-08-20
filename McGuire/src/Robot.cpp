@@ -24,27 +24,29 @@ class Robot: public SampleRobot
 	// XXX: DigitalInput d_turret; 	// photo sensor	 // TODO may need to be replaced by PhotoSensor
 
 public:
-	Robot() // Basic initialization, should not contain complex calculations
-	{
-		j_right_front(0); 		// set CAN number
-		j_right_rear(1);		// set CAN number
-		j_left_front(2);		// set CAN number
-		j_left_rear(3);			// set CAN number
+	Robot(): // Basic initialization, should not contain complex calculations
 
-		s_drive(0);				// set USB port number, doesn't correspond to actual USB port, just the ordering in the driver station
-		s_buttons(1);			// set USB port number, doesn't correspond to actual USB port, just the ordering in the driver station
-		s_override(2);			// set USB port number, doesn't correspond to actual USB port, just the ordering in the driver station
+		j_right_front(0), 		// set CAN number
+		j_right_rear(1),		// set CAN number
+		j_left_front(2),		// set CAN number
+		j_left_rear(3),			// set CAN number
 
-		j_intake(4);			// set CAN number
-		j_turret_aim(5);		// set CAN number
-		j_turret_flywheel(6);	// set CAN number
+		s_drive(0),				// set USB port number, doesn't correspond to actual USB port, just the ordering in the driver station
+		s_buttons(1),			// set USB port number, doesn't correspond to actual USB port, just the ordering in the driver station
+		s_override(2),			// set USB port number, doesn't correspond to actual USB port, just the ordering in the driver station
 
-		s_shifter(1, 0);		// set CAN number for PCM and set solenoid number
-		s_shooter(1, 1);		// set CAN number for PCM and set solenoid number
-		s_turret(1, 2);			// set CAN number for PCM and set solenoid number
+		j_intake(4),			// set CAN number
+		j_turret_aim(5),		// set CAN number
+		j_turret_flywheel(6),	// set CAN number
 
-		a_turret(0, 360, -180);	// set Analog Input number, the range of the sensor (arbitrary unit), and the minimum value that should be read
+		s_shifter(1, 0),		// set CAN number for PCM and set solenoid number
+		s_shooter(1, 1),		// set CAN number for PCM and set solenoid number
+		s_turret(1, 2),			// set CAN number for PCM and set solenoid number
+
+		a_turret(0, 360, -180)	// set Analog Input number, the range of the sensor (arbitrary unit), and the minimum value that should be read
 		//d_turret(0);			// set Digital Input number
+	{
+
 	}
 
 	/**
@@ -100,22 +102,23 @@ public:
 			}
 			else
 			{
-				not_wait = true;
 				if (IsNewDataAvailable())
 				{
-					drive_override = override.Get(4);	// if this button is depressed and
-														// the robot is in kid mode, the user
-														// of the override controller will be the
-														// sole operator of the drive
-					buttons_override = override.Get(4);	// if this button is depressed and
-														// the robot is in kid mode, the user
-														// of the override controller will be the
-														// sole operator of the shooting and
-														// in-take mechanisms
+					drive_override = s_override.GetRawButton(4);	// if this button is depressed and
+																	// the robot is in kid mode, the user
+																	// of the override controller will be the
+																	// sole operator of the drive
+					buttons_override = s_override.GetRawButton(4);	// if this button is depressed and
+																	// the robot is in kid mode, the user
+																	// of the override controller will be the
+																	// sole operator of the shooting and
+																	// in-take mechanisms
 				}
 				if (IsAutonomous()) // kid mode
 				{
+					if (drive_override) {
 
+					}
 				}
 				else if (IsOperatorControl()) // normal mode
 				{
@@ -125,6 +128,53 @@ public:
 			Wait(0.005);
 		}
 	}
+private:
+	double limit(double speed) {
+		return (speed > 1) ? 1 : ((speed < -1) ? -1 : speed); 	// if less than -1, -1
+																// else if greater than 1, 1
+																// else return unchanged value
+	}
+	double limit_kid(double speed) {
+		return (speed > 0.3) ? 0.3 : ((speed < -0.3) ? -0.3 : speed); 	// if less than -0.3, -0.3
+																		// else if greater than 0.3, 0.3
+																		// else return unchanged value
+	}
 };
 
 START_ROBOT_CLASS(Robot);
+
+/*
+        moveValue = limit(moveValue);
+        rotateValue = limit(rotateValue);
+
+        if (squaredInputs) {
+            // square the inputs (while preserving the sign) to increase fine control while permitting full power
+            if (moveValue >= 0.0) {
+                moveValue = (moveValue * moveValue);
+            } else {
+                moveValue = -(moveValue * moveValue);
+            }
+            if (rotateValue >= 0.0) {
+                rotateValue = (rotateValue * rotateValue);
+            } else {
+                rotateValue = -(rotateValue * rotateValue);
+            }
+        }
+
+        if (moveValue > 0.0) {
+            if (rotateValue > 0.0) {
+                leftMotorSpeed = moveValue - rotateValue;
+                rightMotorSpeed = Math.max(moveValue, rotateValue);
+            } else {
+                leftMotorSpeed = Math.max(moveValue, -rotateValue);
+                rightMotorSpeed = moveValue + rotateValue;
+            }
+        } else {
+            if (rotateValue > 0.0) {
+                leftMotorSpeed = -Math.max(-moveValue, rotateValue);
+                rightMotorSpeed = moveValue + rotateValue;
+            } else {
+                leftMotorSpeed = moveValue - rotateValue;
+                rightMotorSpeed = -Math.max(-moveValue, -rotateValue);
+            }
+        }*/
